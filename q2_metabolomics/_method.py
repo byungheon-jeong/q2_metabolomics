@@ -258,7 +258,7 @@ def import_mzmine2(manifest: str, quantificationtable: str) -> biom.Table:
     """Reading Into"""
     #temp = metadata_df.T.to_dict("row ID")
     the_df = pd.read_csv(f.name, sep = "\t")
-    the_df["#OTU ID"] = the_df["#OTU ID"].apply(str)
+    the_df["#OTU ID"] = the_df["#OTU ID"].apply(str) #This converts the first column of df into string so biom can create qza file
     values = np.array(the_df.values.tolist())
     sample_list = list(the_df) #This is the list of sample_ids
     observation_list = list(the_df.iloc[:,0]) #this is the list of observations 
