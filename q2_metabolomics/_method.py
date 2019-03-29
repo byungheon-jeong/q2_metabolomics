@@ -1,3 +1,4 @@
+from biom.table import Table
 import biom
 import os
 import ftputil
@@ -9,7 +10,8 @@ import csv
 import uuid
 import errno
 import pandas as pd
-
+import numpy as np
+from numpy import ndarray, asarray, zeros, newaxis
 
 def invoke_workflow(base_url, parameters, login, password):
     username = login
@@ -211,6 +213,11 @@ def _create_table_from_buckettable(buckettable_path, sid_map):
 
 def import_mzmine2(manifest: str, quantificationtable: str) -> biom.Table:
     """Loading Manifest Mapping"""
+    fff=pd.read_csv(quantificationtable)
+    keep_col = ["row ID","row m/z", "row retention time"]#, 'row retention time']
+    metadata_df = fff[keep_col] #this is the observation metadata dataframe
+    sample_metadata_input = metadata_df.to_dict('records') #this is the observation metadata in a list of dict form
+
     sid_mapping = {}
     with open(manifest) as csvfile:
         reader = csv.DictReader(csvfile)
@@ -226,9 +233,6 @@ def import_mzmine2(manifest: str, quantificationtable: str) -> biom.Table:
             feature_id = row["row ID"]
             feature_mz = row["row m/z"]
             feature_rt = row["row retention time"]
-
-            print(feature_id)
-
             output_dict = {}
             output_dict["#OTU ID"] = feature_id
 
@@ -248,14 +252,20 @@ def import_mzmine2(manifest: str, quantificationtable: str) -> biom.Table:
         fieldnames.insert(0, "#OTU ID")
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter="\t")
         writer.writeheader()
-
         for output_dict in output_list:
             writer.writerow(output_dict)
-
     """Reading Into"""
-    with open(f.name) as fh:
-        table = biom.Table.from_tsv(fh, None, None, None)
-
+    #temp = metadata_df.T.to_dict("row ID")
+    the_df = pd.read_csv(f.name, sep = "\t")
+    values = np.array(the_df.values.tolist())
+    sample_list = list(the_df) #This is the list of sample_ids
+    observation_list = list(the_df.iloc[:,0]) #this is the list of observations 
+    data = np.arange(40).reshape(10, 4)
+    temp = zip(*data)
+    table = Table(values, observation_list, sample_list, observation_metadata = sample_metadata_input)
+    #print(len(values))
+    #print(len(values[0]))
+    #print(len(sample_metadata_input))
+    #biom_table_condition_tester(values)
     os.unlink(f.name)
-
     return table
