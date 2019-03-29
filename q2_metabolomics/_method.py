@@ -216,6 +216,7 @@ def import_mzmine2(manifest: str, quantificationtable: str) -> biom.Table:
     fff=pd.read_csv(quantificationtable)
     keep_col = ["row ID","row m/z", "row retention time"]#, 'row retention time']
     metadata_df = fff[keep_col] #this is the observation metadata dataframe
+
     sample_metadata_input = metadata_df.to_dict('records') #this is the observation metadata in a list of dict form
 
     sid_mapping = {}
@@ -257,6 +258,7 @@ def import_mzmine2(manifest: str, quantificationtable: str) -> biom.Table:
     """Reading Into"""
     #temp = metadata_df.T.to_dict("row ID")
     the_df = pd.read_csv(f.name, sep = "\t")
+    the_df["#OTU ID"] = the_df["#OTU ID"].apply(str)
     values = np.array(the_df.values.tolist())
     sample_list = list(the_df) #This is the list of sample_ids
     observation_list = list(the_df.iloc[:,0]) #this is the list of observations 
