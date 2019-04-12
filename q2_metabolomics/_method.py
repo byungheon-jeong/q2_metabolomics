@@ -212,11 +212,12 @@ def _create_table_from_buckettable(buckettable_path, sid_map):
     return table
 
 def import_mzmine2(manifest: str, quantificationtable: str) -> biom.Table:
+   
     """Loading Manifest Mapping"""
     fff=pd.read_csv(quantificationtable)
     keep_col = ["row ID","row m/z", "row retention time"]#, 'row retention time']
     metadata_df = fff[keep_col] #this is the observation metadata dataframe
-
+    metadata_df = metadata_df.rename(index = str, columns = {"row ID": "#OTU ID","row m/z": "row m/z", "row retention time":"row retention time"})
     sample_metadata_input = metadata_df.to_dict('records') #this is the observation metadata in a list of dict form
 
     sid_mapping = {}
@@ -270,4 +271,6 @@ def import_mzmine2(manifest: str, quantificationtable: str) -> biom.Table:
     #print(len(sample_metadata_input))
     #biom_table_condition_tester(values)
     os.unlink(f.name)
+    
     return table
+
